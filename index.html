@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Ocean Treasure Hunt — Maths</title>
+<style>
+  :root{
+    --deep: #073b4c;
+    --sea: #0e6ba8;
+    --lagoon: #4fb6cc;
+    --foam: #eaf7fb;
+    --sand: #fff3d6;
+    --coral: #ff6b5b;
+    --coral-dark: #b8392c;
+    --gold: #ffcb47;
+    --gold-dark: #8a5b06;
+    --leaf: #2ec47a;
+    --leaf-dark: #0f7a48;
+    --ink: #073b4c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+    background: linear-gradient(180deg, #bfe9f5 0%, #6fc4dd 40%, #1c8bb8 100%);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 20px 12px;
+    color: var(--ink);
+  }
+  .game{
+    width:100%;
+    max-width:480px;
+    background: var(--foam);
+    border-radius: 24px;
+    box-shadow: 0 16px 0 rgba(7,59,76,0.15);
+    overflow:hidden;
+    position:relative;
+  }
+  .topbar{
+    background: var(--deep);
+    color:white;
+    padding: 14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .topbar .title{
+    font-weight:bold;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .pearl-count{
+    background: var(--gold);
+    color: var(--gold-dark);
+    font-weight:bold;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .statsbar{
+    background: #0a4d63;
+    color:white;
+    padding: 10px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    gap:10px;
+  }
+  .timer-block{ flex:1; }
+  .timer-row{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin-bottom:4px;
+  }
+  .timer-row .big{
+    font-size:16px;
+    font-weight:bold;
+  }
+  .timer-bar{
+    height:6px;
+    background: rgba(255,255,255,0.2);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .timer-fill{
+    height:100%;
+    background: var(--gold);
+    width:0%;
+    transition: width 0.4s ease;
+  }
+  .timer-fill.goal-hit{ background: var(--leaf); }
+  .streak-block{
+    text-align:right;
+    white-space:nowrap;
+  }
+  .streak-block .big{
+    font-size:16px;
+    font-weight:bold;
+  }
+  .weekdays{
+    display:flex;
+    justify-content:space-between;
+    padding: 10px 18px 4px;
+    gap:6px;
+  }
+  .day-chip{
+    flex:1;
+    text-align:center;
+    font-size:11px;
+    color: var(--sea);
+  }
+  .day-chip .dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:white;
+    border:2px solid #cfeaf3;
+    margin: 0 auto 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+  }
+  .day-chip.done .dot{
+    background: var(--leaf);
+    border-color: var(--leaf-dark);
+    color:white;
+  }
+  .day-chip.today .dot{
+    border-color: var(--coral);
+    border-width:3px;
+  }
+  .body{
+    padding: 16px 20px 20px;
+  }
+  .op-badge{
+    display:inline-block;
+    font-size:11px;
+    font-weight:bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+  .op-badge.mult{ background:#e6f1fb; color:#0c447c; }
+  .op-badge.add{ background:#eaf3de; color:#3b6d11; }
+  .op-badge.sub{ background:#fbeaf0; color:#993556; }
+  .question-card{
+    background: linear-gradient(180deg, #d4f1fb, #aee3f2);
+    border-radius: 18px;
+    padding: 18px;
+    text-align:center;
+    margin-bottom:18px;
+    border: 3px solid #ffffff;
+  }
+  .question-label{
+    font-size:16px;
+    color:var(--sea);
+    font-weight:bold;
+    margin-bottom:10px;
+  }
+  .equation{
+    font-size:26px;
+    font-weight:bold;
+    color:var(--deep);
+    margin-bottom:14px;
+  }
+  .build-hint{
+    font-size:13px;
+    color:var(--sea);
+    margin-bottom:10px;
+  }
+  .tap-groups{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    min-height: 70px;
+    margin-bottom: 10px;
+  }
+  .fish-group{
+    display:inline-block;
+    background:white;
+    border-radius:12px;
+    padding:6px 8px;
+    font-size:22px;
+    line-height:1.1;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+    animation: pop 0.25s ease;
+  }
+  .fish-group.start-group{ background:#eaf7fb; }
+  .fish-group.added-fish{ background: var(--sand); padding:6px 7px; }
+  @keyframes pop{
+    from{ transform: scale(0.4); opacity:0; }
+    to{ transform: scale(1); opacity:1; }
+  }
+  .add-btn{
+    background: var(--coral);
+    color:white;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    padding: 12px 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--coral-dark);
+    cursor:pointer;
+    touch-action: manipulation;
+  }
+  .add-btn:active{
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--coral-dark);
+  }
+  .add-btn:disabled{
+    background:#c9c9c9;
+    box-shadow: 0 4px 0 #a3a3a3;
+    cursor:default;
+  }
+  .running-total{
+    font-size:14px;
+    color:var(--deep);
+    margin-top:8px;
+    font-weight:bold;
+  }
+  .choices{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .choice-btn{
+    background:white;
+    border: 2px solid #cfeaf3;
+    border-radius: 14px;
+    font-size:22px;
+    font-weight:bold;
+    padding: 16px 0;
+    color: var(--deep);
+    cursor:pointer;
+    box-shadow: 0 3px 0 #cfeaf3;
+  }
+  .choice-btn:disabled{ cursor:default; }
+  .choice-btn.correct{
+    background: #d9f7e6;
+    border-color: var(--leaf);
+    color: var(--leaf-dark);
+    box-shadow: 0 3px 0 var(--leaf);
+  }
+  .choice-btn.wrong{
+    background: #ffe3e0;
+    border-color: var(--coral);
+    color: var(--coral-dark);
+    box-shadow: 0 3px 0 var(--coral);
+  }
+  .feedback{
+    text-align:center;
+    font-size:15px;
+    font-weight:bold;
+    min-height: 22px;
+    margin-bottom: 10px;
+  }
+  .feedback.good{ color: var(--leaf-dark); }
+  .feedback.bad{ color: var(--coral-dark); }
+  .explain-box{
+    display:none;
+    background: var(--sand);
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .explain-box.show{ display:block; }
+  .explain-title{
+    font-size:14px;
+    font-weight:bold;
+    color: var(--gold-dark);
+    margin-bottom:8px;
+  }
+  .explain-groups{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .explain-groups span{
+    background:white;
+    border-radius:10px;
+    padding:4px 6px;
+    font-size:18px;
+  }
+  .explain-steps{
+    font-size:14px;
+    color: var(--ink);
+    line-height:1.6;
+  }
+  .explain-steps strong{ color: var(--gold-dark); }
+  .reef-wrap{ margin-top: 6px; }
+  .reef-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--sea);
+    margin-bottom:6px;
+  }
+  .reef-bar{
+    height: 14px;
+    background: #d4f1fb;
+    border-radius: 20px;
+    overflow:hidden;
+    border: 2px solid white;
+  }
+  .reef-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--leaf), var(--gold));
+    transition: width 0.4s ease;
+  }
+  .friends{
+    display:flex;
+    justify-content:center;
+    gap: 14px;
+    font-size: 26px;
+    margin-top: 14px;
+    min-height: 34px;
+  }
+  .friends span{
+    opacity:0.15;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    transform: scale(0.7);
+  }
+  .friends span.unlocked{
+    opacity:1;
+    transform: scale(1);
+  }
+  .next-btn{
+    display:block;
+    width:100%;
+    background: var(--sea);
+    color:white;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    padding: 14px 0;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--deep);
+    cursor:pointer;
+    margin-top: 8px;
+  }
+  .next-btn:active{
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--deep);
+  }
+  .finish-btn{
+    display:block;
+    width:100%;
+    background: white;
+    color: var(--sea);
+    border: 2px solid #cfeaf3;
+    font-weight:bold;
+    font-size:14px;
+    padding: 12px 0;
+    border-radius: 14px;
+    cursor:pointer;
+    margin-top: 18px;
+  }
+  .overlay{
+    position:absolute;
+    inset:0;
+    background: rgba(7,59,76,0.92);
+    color:white;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 24px 20px;
+    border-radius: 24px;
+    overflow-y:auto;
+  }
+  .overlay.show{ display:flex; }
+  .overlay .big{ font-size: 44px; margin-bottom: 8px; }
+  .overlay h2{ margin: 0 0 6px; font-size: 19px; }
+  .overlay p{ margin: 0 0 14px; font-size: 13px; opacity: 0.9; }
+  .overlay button{
+    background: var(--gold);
+    color: var(--gold-dark);
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    padding: 12px 24px;
+    border-radius: 14px;
+    cursor:pointer;
+    margin-top: 6px;
+  }
+  .overlay button.secondary{
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.5);
+  }
+  .report-card{
+    background: white;
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 16px;
+    width:100%;
+    max-width: 380px;
+    text-align:left;
+    margin-bottom: 14px;
+  }
+  .report-card .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eef4f7;
+  }
+  .report-card .score{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    color: var(--leaf-dark);
+    padding: 8px 0;
+  }
+  .report-list{
+    font-size:12px;
+    margin-top:8px;
+  }
+  .report-list .heading{
+    font-weight:bold;
+    color: var(--sea);
+    margin: 8px 0 4px;
+  }
+  .report-list .item{ padding: 2px 0; }
+  .report-list .item.wrong{ color: var(--coral-dark); }
+  .report-list .item.right{ color: var(--leaf-dark); }
+  .btn-row{
+    display:flex;
+    gap:10px;
+    width:100%;
+    max-width: 380px;
+  }
+  .btn-row button{ flex:1; }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <div class="topbar">
+    <div class="title"><span>🌊</span> Ocean Treasure Hunt</div>
+    <div class="pearl-count"><span>🦪</span><span id="pearlCount">0</span></div>
+  </div>
+
+  <div class="statsbar">
+    <div class="timer-block">
+      <div class="timer-row">
+        <span>⏱</span>
+        <span class="big" id="timerDisplay">00:00</span>
+        <span>/ 10:00 goal today</span>
+      </div>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:0%"></div></div>
+    </div>
+    <div class="streak-block">
+      <div class="big" id="streakCount">🔥 0</div>
+      <div>day streak</div>
+    </div>
+  </div>
+
+  <div class="weekdays" id="weekdays"></div>
+
+  <div class="body">
+    <div class="question-card">
+      <div class="op-badge" id="opBadge">times tables</div>
+      <div class="question-label" id="questionLabel">how many fish altogether?</div>
+      <div class="equation" id="equation">6 x 4 = ?</div>
+      <div class="build-hint" id="buildHint">tap the button to build the answer and watch the total change</div>
+      <div class="tap-groups" id="tapGroups"></div>
+      <button class="add-btn" id="addGroupBtn">add a group of 6 🐟</button>
+      <div class="running-total" id="runningTotal">total so far: 0</div>
+    </div>
+
+    <div class="choices" id="choices"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="explain-box" id="explainBox">
+      <div class="explain-title">let's work it out together</div>
+      <div class="explain-groups" id="explainGroups"></div>
+      <div class="explain-steps" id="explainSteps"></div>
+    </div>
+
+    <div class="reef-wrap">
+      <div class="reef-label">
+        <span>coral reef growing</span>
+        <span id="reefText">0 / 10 shells</span>
+      </div>
+      <div class="reef-bar"><div class="reef-fill" id="reefFill" style="width:0%"></div></div>
+      <div class="friends" id="friends">
+        <span data-need="2">🐠</span>
+        <span data-need="4">🐢</span>
+        <span data-need="6">🦀</span>
+        <span data-need="8">🐬</span>
+        <span data-need="10">🐙</span>
+      </div>
+    </div>
+
+    <button class="finish-btn" id="finishBtn">finish session and get report</button>
+  </div>
+
+  <div class="overlay" id="celebrate">
+    <div class="big">🏆</div>
+    <h2>the reef is full of friends!</h2>
+    <p>Remi collected 10 shells and every sea friend came to visit.</p>
+    <button id="playAgainBtn">play again</button>
+  </div>
+
+  <div class="overlay" id="reportOverlay">
+    <div class="big">📋</div>
+    <h2>session report</h2>
+    <div class="report-card" id="reportCard"></div>
+    <div class="btn-row">
+      <button id="downloadReportBtn">download report</button>
+      <button class="secondary" id="closeReportBtn">keep playing</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var GOAL_SECONDS = 600;      // 10 minutes
+  var REIGNITE_SECONDS = 900;  // 15 minutes
+  var STORAGE_KEY = 'remi-ocean-math-data';
+  var DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var MULT_TABLES = [2, 3, 4, 5, 6, 7, 10]; // his current focus (6) plus foundational tables
+
+  var order = [];
+  var factIndex = 0;
+  var pearls = 0;
+  var shells = 0;
+  var shellsNeeded = 10;
+  var answered = false;
+
+  var currentQuestion = null; // {type, a, b, answer}
+  var stepsDone = 0;
+  var maxSteps = 0;
+
+  var data = { minutesByDate: {}, sessions: [] };
+  var todayIso = isoDate(new Date());
+  var minutesTodayBeforeSegment = 0;
+  var segmentStart = Date.now();
+  var timerInterval = null;
+  var sessionLog = []; // {equation, chosen, correctAnswer, isCorrect}
+  var lastSegmentSeconds = 0;
+
+  function isoDate(d){
+    var y = d.getFullYear();
+    var m = String(d.getMonth()+1).padStart(2,'0');
+    var day = String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // ---------- Question generation ----------
+  function generateMultFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = MULT_TABLES[randInt(0, MULT_TABLES.length - 1)];
+      var b = randInt(2, 12);
+      out.push({ type:'mult', a:a, b:b, answer:a*b });
+    }
+    return out;
+  }
+  function generateAddFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = randInt(2, 10);
+      var b = randInt(2, 10);
+      out.push({ type:'add', a:a, b:b, answer:a+b });
+    }
+    return out;
+  }
+  function generateSubFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = randInt(5, 20);
+      var b = randInt(1, Math.min(a, 10));
+      out.push({ type:'sub', a:a, b:b, answer:a-b });
+    }
+    return out;
+  }
+  function buildPool(){
+    return shuffle(generateMultFacts(12).concat(generateAddFacts(12), generateSubFacts(12)));
+  }
+
+  function equationText(q){
+    if(q.type === 'mult') return q.a + ' x ' + q.b + ' = ?';
+    if(q.type === 'add') return q.a + ' + ' + q.b + ' = ?';
+    return q.a + ' - ' + q.b + ' = ?';
+  }
+  function equationTextSolved(q){
+    var op = q.type === 'mult' ? 'x' : (q.type === 'add' ? '+' : '-');
+    return q.a + ' ' + op + ' ' + q.b;
+  }
+  function promptTextFor(q){
+    if(q.type === 'sub') return 'how many fish are left?';
+    return 'how many fish altogether?';
+  }
+  function badgeFor(q){
+    if(q.type === 'mult') return { text: 'times tables', cls: 'mult' };
+    if(q.type === 'add') return { text: 'addition', cls: 'add' };
+    return { text: 'subtraction', cls: 'sub' };
+  }
+
+  // ---------- Storage ----------
+  async function loadData(){
+    try{
+      var result = await window.storage.get(STORAGE_KEY, false);
+      if(result && result.value){
+        var parsed = JSON.parse(result.value);
+        if(parsed && typeof parsed === 'object'){
+          data.minutesByDate = parsed.minutesByDate || {};
+          data.sessions = parsed.sessions || [];
+        }
+      }
+    } catch(err){
+      data = { minutesByDate: {}, sessions: [] };
+    }
+  }
+  async function saveData(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(data), false);
+    } catch(err){
+      console.error('could not save progress', err);
+    }
+  }
+
+  // ---------- Streak ----------
+  function computeStreak(minutesByDate, todayIsoStr){
+    var keys = Object.keys(minutesByDate);
+    if(keys.length === 0) return 0;
+    keys.sort();
+    var cursor = new Date(keys[0] + 'T00:00:00');
+    var end = new Date(todayIsoStr + 'T00:00:00');
+    var streak = 0;
+    var missedPending = false;
+    while(cursor <= end){
+      var iso = isoDate(cursor);
+      var seconds = minutesByDate[iso] || 0;
+      if(seconds >= GOAL_SECONDS){
+        if(missedPending){
+          streak = (seconds >= REIGNITE_SECONDS) ? streak + 1 : 1;
+          missedPending = false;
+        } else {
+          streak += 1;
+        }
+      } else {
+        if(!missedPending){
+          missedPending = true;
+        } else {
+          streak = 0;
+        }
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return streak;
+  }
+
+  function mondayOf(date){
+    var d = new Date(date);
+    var day = d.getDay();
+    var diff = (day === 0) ? -6 : (1 - day);
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function renderWeekdays(){
+    var wrap = document.getElementById('weekdays');
+    wrap.innerHTML = '';
+    var monday = mondayOf(new Date());
+    for(var i = 0; i < 7; i++){
+      var d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      var iso = isoDate(d);
+      var seconds = data.minutesByDate[iso] || 0;
+      var isToday = iso === todayIso;
+      var isDone = seconds >= GOAL_SECONDS;
+
+      var chip = document.createElement('div');
+      chip.className = 'day-chip' + (isDone ? ' done' : '') + (isToday ? ' today' : '');
+      var dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.textContent = isDone ? '✓' : '';
+      chip.appendChild(dot);
+      var label = document.createElement('div');
+      label.textContent = DAY_ABBR[i];
+      chip.appendChild(label);
+      wrap.appendChild(chip);
+    }
+  }
+
+  function renderStreak(){
+    var streak = computeStreak(data.minutesByDate, todayIso);
+    document.getElementById('streakCount').textContent = '🔥 ' + streak;
+  }
+
+  // ---------- Timer ----------
+  function currentTodaySeconds(){
+    var liveSeconds = Math.floor((Date.now() - segmentStart) / 1000);
+    return minutesTodayBeforeSegment + liveSeconds;
+  }
+  function tickTimer(){
+    var totalSeconds = currentTodaySeconds();
+    var mins = Math.floor(totalSeconds / 60);
+    var secs = totalSeconds % 60;
+    document.getElementById('timerDisplay').textContent = pad2(mins) + ':' + pad2(secs);
+    var pct = Math.min(100, Math.round((totalSeconds / GOAL_SECONDS) * 100));
+    var fill = document.getElementById('timerFill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('goal-hit', totalSeconds >= GOAL_SECONDS);
+  }
+  function startTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    segmentStart = Date.now();
+    tickTimer();
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  // ---------- Question flow ----------
+  function nearMissChoices(correct){
+    var options = new Set([correct]);
+    var deltas = shuffle([1, -1, 2, -2, 3, -3, 5, -5, 10, -10]);
+    var di = 0;
+    while(options.size < 3 && di < deltas.length){
+      var val = correct + deltas[di];
+      di++;
+      if(val > 0 && val !== correct) options.add(val);
+    }
+    return shuffle(Array.from(options));
+  }
+
+  function newQuestion(){
+    answered = false;
+    if(order.length === 0){
+      order = buildPool();
+      factIndex = 0;
+    }
+    currentQuestion = order[factIndex];
+    factIndex++;
+    if(factIndex >= order.length){ factIndex = 0; order = buildPool(); }
+
+    var badge = badgeFor(currentQuestion);
+    var badgeEl = document.getElementById('opBadge');
+    badgeEl.textContent = badge.text;
+    badgeEl.className = 'op-badge ' + badge.cls;
+
+    document.getElementById('questionLabel').textContent = promptTextFor(currentQuestion);
+    document.getElementById('equation').textContent = equationText(currentQuestion);
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+
+    var explainBox = document.getElementById('explainBox');
+    explainBox.classList.remove('show');
+    document.getElementById('explainGroups').innerHTML = '';
+    document.getElementById('explainSteps').innerHTML = '';
+
+    setupVisualBuilder();
+    renderChoices();
+  }
+
+  function updateRunningTotal(val){
+    document.getElementById('runningTotal').textContent = 'total so far: ' + val;
+  }
+
+  function setupVisualBuilder(){
+    var wrap = document.getElementById('tapGroups');
+    wrap.innerHTML = '';
+    stepsDone = 0;
+    var addBtn = document.getElementById('addGroupBtn');
+    var hint = document.getElementById('buildHint');
+    addBtn.disabled = false;
+
+    if(currentQuestion.type === 'mult'){
+      maxSteps = currentQuestion.b;
+      addBtn.textContent = 'add a group of ' + currentQuestion.a + ' 🐟';
+      hint.textContent = 'tap to add a group of ' + currentQuestion.a + ' fish, ' + currentQuestion.b + ' times';
+      updateRunningTotal(0);
+    } else if(currentQuestion.type === 'add'){
+      maxSteps = currentQuestion.b;
+      var startBox = document.createElement('div');
+      startBox.className = 'fish-group start-group';
+      startBox.textContent = '🐟'.repeat(currentQuestion.a);
+      wrap.appendChild(startBox);
+      addBtn.textContent = 'add 1 more fish 🐟';
+      hint.textContent = 'start with ' + currentQuestion.a + ' fish, tap to add ' + currentQuestion.b + ' more';
+      updateRunningTotal(currentQuestion.a);
+    } else if(currentQuestion.type === 'sub'){
+      maxSteps = currentQuestion.b;
+      var startBox2 = document.createElement('div');
+      startBox2.className = 'fish-group start-group';
+      startBox2.id = 'subGroupBox';
+      startBox2.textContent = '🐟'.repeat(currentQuestion.a);
+      wrap.appendChild(startBox2);
+      addBtn.textContent = 'take one fish away 🐟';
+      hint.textContent = 'start with ' + currentQuestion.a + ' fish, tap to take away ' + currentQuestion.b;
+      updateRunningTotal(currentQuestion.a);
+    }
+    if(maxSteps === 0){ addBtn.disabled = true; }
+  }
+
+  function handleAddGroup(){
+    if(!currentQuestion || stepsDone >= maxSteps) return;
+    stepsDone++;
+    var wrap = document.getElementById('tapGroups');
+
+    if(currentQuestion.type === 'mult'){
+      var group = document.createElement('div');
+      group.className = 'fish-group';
+      group.textContent = '🐟'.repeat(currentQuestion.a);
+      wrap.appendChild(group);
+      updateRunningTotal(stepsDone * currentQuestion.a);
+    } else if(currentQuestion.type === 'add'){
+      var fish = document.createElement('span');
+      fish.className = 'fish-group added-fish';
+      fish.textContent = '🐟';
+      wrap.appendChild(fish);
+      updateRunningTotal(currentQuestion.a + stepsDone);
+    } else if(currentQuestion.type === 'sub'){
+      var box = document.getElementById('subGroupBox');
+      if(box){
+        var remaining = Math.max(currentQuestion.a - stepsDone, 0);
+        box.textContent = '🐟'.repeat(remaining);
+      }
+      updateRunningTotal(currentQuestion.a - stepsDone);
+    }
+
+    if(stepsDone >= maxSteps){
+      document.getElementById('addGroupBtn').disabled = true;
+    }
+  }
+
+  function renderChoices(){
+    var choicesEl = document.getElementById('choices');
+    choicesEl.innerHTML = '';
+    var opts = nearMissChoices(currentQuestion.answer);
+    opts.forEach(function(val){
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = val;
+      btn.onclick = function(){ handleChoice(val, btn); };
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function handleChoice(val, btn){
+    if(answered) return;
+    answered = true;
+    var buttons = document.querySelectorAll('.choice-btn');
+    var feedback = document.getElementById('feedback');
+    var isCorrect = (val === currentQuestion.answer);
+
+    buttons.forEach(function(b){ b.disabled = true; });
+
+    sessionLog.push({
+      equation: equationTextSolved(currentQuestion),
+      chosen: val,
+      correctAnswer: currentQuestion.answer,
+      isCorrect: isCorrect
+    });
+
+    if(isCorrect){
+      btn.classList.add('correct');
+      feedback.textContent = 'yes! ' + equationTextSolved(currentQuestion) + ' = ' + currentQuestion.answer + '. a pearl for the treasure chest.';
+      feedback.className = 'feedback good';
+      awardPearl();
+    } else {
+      btn.classList.add('wrong');
+      buttons.forEach(function(b){
+        if(parseInt(b.textContent, 10) === currentQuestion.answer){ b.classList.add('correct'); }
+      });
+      feedback.textContent = 'not quite — but let\'s work it out together.';
+      feedback.className = 'feedback bad';
+      showExplanation();
+    }
+
+    var next = document.createElement('button');
+    next.className = 'next-btn';
+    next.textContent = isCorrect ? 'next question' : 'ok, got it — next question';
+    next.onclick = function(){ next.remove(); newQuestion(); };
+    document.getElementById('explainBox').after(next);
+  }
+
+  function showExplanation(){
+    var q = currentQuestion;
+    var groupsWrap = document.getElementById('explainGroups');
+    groupsWrap.innerHTML = '';
+    var stepsEl = document.getElementById('explainSteps');
+
+    if(q.type === 'mult'){
+      for(var i = 0; i < q.b; i++){
+        var g = document.createElement('span');
+        g.textContent = '🐟'.repeat(q.a);
+        groupsWrap.appendChild(g);
+      }
+      var running1 = [];
+      for(var n = 1; n <= q.b; n++){ running1.push(n * q.a); }
+      stepsEl.innerHTML =
+        q.b + ' groups of ' + q.a + ' fish.<br>' +
+        'count up in ' + q.a + 's: ' + running1.join(', ') + '.<br>' +
+        q.a + ' x ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    } else if(q.type === 'add'){
+      var g1 = document.createElement('span'); g1.textContent = '🐟'.repeat(q.a); groupsWrap.appendChild(g1);
+      var g2 = document.createElement('span'); g2.textContent = '🐟'.repeat(q.b); groupsWrap.appendChild(g2);
+      var running2 = [];
+      for(var m = 0; m <= q.b; m++){ running2.push(q.a + m); }
+      stepsEl.innerHTML =
+        'start with ' + q.a + ' fish, count on ' + q.b + ' more.<br>' +
+        running2.join(', ') + '.<br>' +
+        q.a + ' + ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    } else if(q.type === 'sub'){
+      var g3 = document.createElement('span'); g3.textContent = '🐟'.repeat(q.a); groupsWrap.appendChild(g3);
+      var running3 = [];
+      for(var k = 0; k <= q.b; k++){ running3.push(q.a - k); }
+      stepsEl.innerHTML =
+        'start with ' + q.a + ' fish, count back ' + q.b + '.<br>' +
+        running3.join(', ') + '.<br>' +
+        q.a + ' - ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    }
+
+    document.getElementById('explainBox').classList.add('show');
+  }
+
+  function awardPearl(){
+    pearls++;
+    document.getElementById('pearlCount').textContent = pearls;
+    if(shells < shellsNeeded){
+      shells++;
+      updateReef();
+    }
+    if(shells >= shellsNeeded){
+      setTimeout(showCelebration, 700);
+    }
+  }
+
+  function updateReef(){
+    var pct = Math.round((shells / shellsNeeded) * 100);
+    document.getElementById('reefFill').style.width = pct + '%';
+    document.getElementById('reefText').textContent = shells + ' / ' + shellsNeeded + ' shells';
+    document.querySelectorAll('#friends span').forEach(function(el){
+      var need = parseInt(el.getAttribute('data-need'), 10);
+      if(shells >= need){ el.classList.add('unlocked'); }
+    });
+  }
+
+  function showCelebration(){
+    document.getElementById('celebrate').classList.add('show');
+  }
+
+  function resetGame(){
+    pearls = 0;
+    shells = 0;
+    document.getElementById('pearlCount').textContent = 0;
+    updateReef();
+    document.querySelectorAll('#friends span').forEach(function(el){ el.classList.remove('unlocked'); });
+    document.getElementById('celebrate').classList.remove('show');
+    newQuestion();
+  }
+
+  // ---------- Session report ----------
+  function niceDate(){
+    var d = new Date();
+    return d.toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+
+  async function finishSession(){
+    clearInterval(timerInterval);
+    var segmentSeconds = Math.floor((Date.now() - segmentStart) / 1000);
+    lastSegmentSeconds = segmentSeconds;
+    var totalTodaySeconds = minutesTodayBeforeSegment + segmentSeconds;
+
+    data.minutesByDate[todayIso] = totalTodaySeconds;
+    data.sessions.push({
+      date: todayIso,
+      seconds: segmentSeconds,
+      correct: sessionLog.filter(function(s){ return s.isCorrect; }).length,
+      wrong: sessionLog.filter(function(s){ return !s.isCorrect; }).length
+    });
+    if(data.sessions.length > 60){ data.sessions = data.sessions.slice(-60); }
+
+    await saveData();
+
+    minutesTodayBeforeSegment = totalTodaySeconds;
+    renderWeekdays();
+    renderStreak();
+    showReport(segmentSeconds);
+  }
+
+  function showReport(segmentSeconds){
+    var correct = sessionLog.filter(function(s){ return s.isCorrect; });
+    var wrong = sessionLog.filter(function(s){ return !s.isCorrect; });
+    var total = sessionLog.length;
+    var pct = total > 0 ? Math.round((correct.length / total) * 100) : 0;
+    var mins = Math.floor(segmentSeconds / 60);
+    var secs = segmentSeconds % 60;
+    var streak = computeStreak(data.minutesByDate, todayIso);
+    var goalMet = (minutesTodayBeforeSegment >= GOAL_SECONDS);
+
+    var card = document.getElementById('reportCard');
+    var html = '';
+    html += '<div class="row"><span>date</span><span>' + niceDate() + '</span></div>';
+    html += '<div class="row"><span>time this session</span><span>' + pad2(mins) + ':' + pad2(secs) + '</span></div>';
+    html += '<div class="row"><span>today\'s total</span><span>' + pad2(Math.floor(minutesTodayBeforeSegment/60)) + ':' + pad2(minutesTodayBeforeSegment%60) + (goalMet ? ' — goal met!' : '') + '</span></div>';
+    html += '<div class="row"><span>current streak</span><span>🔥 ' + streak + ' day' + (streak === 1 ? '' : 's') + '</span></div>';
+    if(total > 0){
+      html += '<div class="score">' + correct.length + ' / ' + total + ' correct (' + pct + '%)</div>';
+    } else {
+      html += '<div class="score">no questions answered yet</div>';
+    }
+    if(correct.length > 0){
+      html += '<div class="report-list"><div class="heading">got right</div>';
+      correct.forEach(function(s){
+        html += '<div class="item right">' + s.equation + ' = ' + s.correctAnswer + '</div>';
+      });
+      html += '</div>';
+    }
+    if(wrong.length > 0){
+      html += '<div class="report-list"><div class="heading">needs more practice</div>';
+      wrong.forEach(function(s){
+        html += '<div class="item wrong">' + s.equation + ' = ' + s.correctAnswer + ' (chose ' + s.chosen + ')</div>';
+      });
+      html += '</div>';
+    }
+    card.innerHTML = html;
+
+    document.getElementById('reportOverlay').classList.add('show');
+  }
+
+  function buildReportText(segmentSeconds){
+    var correct = sessionLog.filter(function(s){ return s.isCorrect; });
+    var wrong = sessionLog.filter(function(s){ return !s.isCorrect; });
+    var total = sessionLog.length;
+    var pct = total > 0 ? Math.round((correct.length / total) * 100) : 0;
+    var mins = Math.floor(segmentSeconds / 60);
+    var secs = segmentSeconds % 60;
+    var streak = computeStreak(data.minutesByDate, todayIso);
+
+    var lines = [];
+    lines.push('Ocean Treasure Hunt — session report');
+    lines.push('Learner: Remi');
+    lines.push('Date: ' + niceDate());
+    lines.push('Time this session: ' + pad2(mins) + ':' + pad2(secs));
+    lines.push('Today\'s total practice time: ' + pad2(Math.floor(minutesTodayBeforeSegment/60)) + ':' + pad2(minutesTodayBeforeSegment%60));
+    lines.push('Current streak: ' + streak + ' day(s)');
+    lines.push('');
+    lines.push('Score: ' + correct.length + ' / ' + total + ' (' + pct + '%)');
+    lines.push('');
+    lines.push('Got right:');
+    if(correct.length === 0){ lines.push('  (none this session)'); }
+    correct.forEach(function(s){ lines.push('  ' + s.equation + ' = ' + s.correctAnswer); });
+    lines.push('');
+    lines.push('Needs more practice:');
+    if(wrong.length === 0){ lines.push('  (none this session)'); }
+    wrong.forEach(function(s){ lines.push('  ' + s.equation + ' = ' + s.correctAnswer + ' (chose ' + s.chosen + ')'); });
+    return lines.join('\n');
+  }
+
+  function downloadReport(){
+    var text = buildReportText(lastSegmentSeconds);
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'remi-math-report-' + todayIso + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Wire up ----------
+  document.getElementById('addGroupBtn').addEventListener('click', handleAddGroup);
+  document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+  document.getElementById('finishBtn').addEventListener('click', finishSession);
+  document.getElementById('downloadReportBtn').addEventListener('click', downloadReport);
+  document.getElementById('closeReportBtn').addEventListener('click', function(){
+    document.getElementById('reportOverlay').classList.remove('show');
+    sessionLog = [];
+    startTimer();
+  });
+
+  async function init(){
+    await loadData();
+    minutesTodayBeforeSegment = data.minutesByDate[todayIso] || 0;
+    renderWeekdays();
+    renderStreak();
+    updateReef();
+    startTimer();
+    newQuestion();
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
