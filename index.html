@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Ocean Treasure Hunt — Maths</title>
+<style>
+  :root{
+    --deep: #073b4c;
+    --sea: #0e6ba8;
+    --lagoon: #4fb6cc;
+    --foam: #eaf7fb;
+    --sand: #fff3d6;
+    --coral: #ff6b5b;
+    --coral-dark: #b8392c;
+    --gold: #ffcb47;
+    --gold-dark: #8a5b06;
+    --leaf: #2ec47a;
+    --leaf-dark: #0f7a48;
+    --ink: #073b4c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+    background: linear-gradient(180deg, #bfe9f5 0%, #6fc4dd 40%, #1c8bb8 100%);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 20px 12px;
+    color: var(--ink);
+  }
+  .game{
+    width:100%;
+    max-width:480px;
+    background: var(--foam);
+    border-radius: 24px;
+    box-shadow: 0 16px 0 rgba(7,59,76,0.15);
+    overflow:hidden;
+    position:relative;
+  }
+  .topbar{
+    background: var(--deep);
+    color:white;
+    padding: 14px 18px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .topbar .title{
+    font-weight:bold;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1;
+  }
+  .icon-btn{
+    background: rgba(255,255,255,0.15);
+    border:none;
+    color:white;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    font-size:16px;
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    justify-content:center;
+  }
+  .pearl-count{
+    background: var(--gold);
+    color: var(--gold-dark);
+    font-weight:bold;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size:15px;
+    display:none;
+    align-items:center;
+    gap:6px;
+  }
+
+  /* ---------- Dashboard ---------- */
+  .dash{
+    padding: 18px 20px 22px;
+  }
+  .dash-stats{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-bottom: 14px;
+  }
+  .dash-stat{
+    background: white;
+    border-radius: 14px;
+    padding: 10px 12px;
+    text-align:center;
+    border: 2px solid #d4f1fb;
+  }
+  .dash-stat .num{
+    font-size:18px;
+    font-weight:bold;
+    color: var(--deep);
+  }
+  .dash-stat .lbl{
+    font-size:11px;
+    color: var(--sea);
+  }
+  .ocean-tracker{
+    background: #04303f;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .ocean-tracker .stop{
+    font-size: 24px;
+    opacity: 0.25;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: scale(0.85);
+  }
+  .ocean-tracker .stop.reached{
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  .ocean-tracker .stop.current{
+    opacity: 1;
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 6px rgba(255,203,71,0.7));
+  }
+  .weekdays{
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+    margin-bottom: 18px;
+  }
+  .day-chip{
+    flex:1;
+    text-align:center;
+    font-size:11px;
+    color: var(--sea);
+  }
+  .day-chip .dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:white;
+    border:2px solid #cfeaf3;
+    margin: 0 auto 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+  }
+  .day-chip.done .dot{
+    background: var(--leaf);
+    border-color: var(--leaf-dark);
+    color:white;
+  }
+  .day-chip.today .dot{
+    border-color: var(--coral);
+    border-width:3px;
+  }
+  .dash-heading{
+    font-size:14px;
+    font-weight:bold;
+    color: var(--deep);
+    margin-bottom: 10px;
+  }
+  .mode-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .mode-card{
+    background: white;
+    border: 2px solid #d4f1fb;
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align:center;
+    cursor:pointer;
+    box-shadow: 0 3px 0 #d4f1fb;
+  }
+  .mode-card:active{
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #d4f1fb;
+  }
+  .mode-card .icon{ font-size: 28px; margin-bottom: 6px; }
+  .mode-card .name{ font-size:14px; font-weight:bold; color: var(--deep); margin-bottom:4px; }
+  .mode-card .sub{ font-size:11px; color: var(--sea); }
+  .mode-card.c-mult{ border-color: var(--gold); box-shadow: 0 3px 0 var(--gold); }
+  .mode-card.c-mult .name{ color: var(--gold-dark); }
+  .mode-card.c-add{ border-color: var(--leaf); box-shadow: 0 3px 0 var(--leaf); }
+  .mode-card.c-add .name{ color: var(--leaf-dark); }
+  .mode-card.c-sub{ border-color: var(--coral); box-shadow: 0 3px 0 var(--coral); }
+  .mode-card.c-sub .name{ color: var(--coral-dark); }
+  .mode-card.c-place{ border-color: #9b8afb; box-shadow: 0 3px 0 #9b8afb; }
+  .mode-card.c-place .name{ color: #4a3f9e; }
+  .mode-card.c-div{ border-color: var(--lagoon); box-shadow: 0 3px 0 var(--lagoon); }
+  .mode-card.c-div .name{ color: #0a6478; }
+  .mode-card.c-bigmult{ border-color: var(--sea); box-shadow: 0 3px 0 var(--sea); }
+  .mode-card.c-bigmult .name{ color: var(--deep); }
+  .mode-card.wide{
+    grid-column: 1 / -1;
+    background: #f1effe;
+    border-color: #7f77dd;
+    box-shadow: 0 3px 0 #7f77dd;
+  }
+  .mode-card.wide .name{ color: #3c3489; }
+  .mode-card.wide .sub{ color: #3c3489; opacity:0.85; }
+
+  /* ---------- Hero title ---------- */
+  .hero{
+    background: var(--deep);
+    color:white;
+    text-align:center;
+    padding: 22px 20px 20px;
+    margin: -18px -20px 18px;
+    position: relative;
+  }
+  .hero .eyebrow{
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.2px;
+    color: var(--lagoon);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero .icon{ font-size:32px; margin-bottom:6px; }
+  .hero h1{
+    font-size:23px;
+    font-weight:800;
+    margin:0 0 6px;
+    letter-spacing:0.2px;
+    background: linear-gradient(90deg, var(--gold), var(--coral));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--gold);
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p{
+    font-size:12.5px;
+    color:#cfe9f2;
+    margin:0;
+    line-height:1.5;
+  }
+  .parent-area-btn{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .tab-pill{
+    display:block;
+    width:100%;
+    text-align:center;
+    background:white;
+    border:2px solid #d4f1fb;
+    border-radius:20px;
+    padding:12px;
+    font-weight:bold;
+    color:var(--sea);
+    font-size:14px;
+    cursor:pointer;
+    margin-top:14px;
+  }
+  .icon-btn-inline{
+    background:white;
+    border:2px solid #d4f1fb;
+    color:var(--sea);
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    font-size:16px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .parents-heading-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .parents-heading-row .dash-heading{ margin:0; }
+  .mini-card{
+    background:white;
+    border-radius:14px;
+    border: 2px solid #d4f1fb;
+    padding: 4px 12px;
+    margin-bottom:16px;
+  }
+  .mini-card .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eef4f7;
+  }
+  .mini-card .row:last-child{ border-bottom:none; }
+  .mini-card .row .name{ color: var(--deep); font-weight:bold; }
+  .mini-card .row .val{ color: var(--sea); }
+
+  .table-grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .table-chip{
+    background:white;
+    border: 2px solid #d4f1fb;
+    border-radius: 14px;
+    padding: 14px 0;
+    text-align:center;
+    font-size:17px;
+    font-weight:bold;
+    color: var(--sea);
+    cursor:pointer;
+  }
+  .table-chip .lbl{
+    display:block;
+    font-size:10px;
+    font-weight:normal;
+    color: var(--sea);
+    margin-top:2px;
+  }
+  .table-chip.selected{
+    background: var(--gold);
+    border-color: var(--gold-dark);
+    color: var(--gold-dark);
+  }
+  .table-chip.selected .lbl{ color: var(--gold-dark); }
+  .quick-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .quick-row button{
+    flex:1;
+    background:white;
+    border: 2px solid #d4f1fb;
+    border-radius: 12px;
+    padding: 10px;
+    font-size:13px;
+    font-weight:bold;
+    color: var(--sea);
+    cursor:pointer;
+  }
+  .select-error{
+    display:none;
+    color: var(--coral-dark);
+    font-size:13px;
+    text-align:center;
+    margin-bottom:12px;
+  }
+  .select-error.show{ display:block; }
+
+  /* ---------- Game screen ---------- */
+  .statsbar{
+    background: #0a4d63;
+    color:white;
+    padding: 10px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    gap:10px;
+  }
+  .timer-block{ flex:1; }
+  .timer-row{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin-bottom:4px;
+  }
+  .timer-row .big{ font-size:16px; font-weight:bold; }
+  .timer-bar{
+    height:6px;
+    background: rgba(255,255,255,0.2);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .timer-fill{
+    height:100%;
+    background: var(--gold);
+    width:0%;
+    transition: width 0.4s ease;
+  }
+  .timer-fill.goal-hit{ background: var(--leaf); }
+  .streak-block{ text-align:right; white-space:nowrap; }
+  .streak-block .big{ font-size:16px; font-weight:bold; }
+
+  .body{ padding: 16px 20px 20px; }
+  .op-badge{
+    display:inline-block;
+    font-size:11px;
+    font-weight:bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+  .op-badge.mult{ background:#fff3d6; color:#8a5b06; }
+  .op-badge.add{ background:#eaf3de; color:#3b6d11; }
+  .op-badge.sub{ background:#fbeaf0; color:#993556; }
+  .op-badge.place{ background:#eeedfe; color:#4a3f9e; }
+  .op-badge.div{ background:#e1f5ee; color:#0a6478; }
+  .op-badge.bigmult{ background:#e6f1fb; color:#073b4c; }
+  .question-card{
+    background: linear-gradient(180deg, #d4f1fb, #aee3f2);
+    border-radius: 18px;
+    padding: 18px;
+    text-align:center;
+    margin-bottom:18px;
+    border: 3px solid #ffffff;
+  }
+  .question-label{
+    font-size:16px;
+    color:var(--sea);
+    font-weight:bold;
+    margin-bottom:10px;
+  }
+  .equation{
+    font-size:26px;
+    font-weight:bold;
+    color:var(--deep);
+    margin-bottom:14px;
+  }
+  .build-hint{ font-size:13px; color:var(--sea); margin-bottom:10px; }
+  .tap-groups{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    min-height: 70px;
+    margin-bottom: 10px;
+  }
+  .fish-group{
+    display:inline-block;
+    background:white;
+    border-radius:12px;
+    padding:6px 8px;
+    font-size:22px;
+    line-height:1.1;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+    animation: pop 0.25s ease;
+  }
+  .fish-group.start-group{ background:#eaf7fb; }
+  .fish-group.added-fish{ background: var(--sand); padding:6px 7px; }
+  @keyframes pop{
+    from{ transform: scale(0.4); opacity:0; }
+    to{ transform: scale(1); opacity:1; }
+  }
+  .add-btn{
+    background: var(--coral);
+    color:white;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    padding: 12px 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--coral-dark);
+    cursor:pointer;
+    touch-action: manipulation;
+  }
+  .add-btn:active{ transform: translateY(3px); box-shadow: 0 1px 0 var(--coral-dark); }
+  .add-btn:disabled{ background:#c9c9c9; box-shadow: 0 4px 0 #a3a3a3; cursor:default; }
+  .running-total{ font-size:14px; color:var(--deep); margin-top:8px; font-weight:bold; }
+  .choices{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .choice-btn{
+    background:white;
+    border: 2px solid #cfeaf3;
+    border-radius: 14px;
+    font-size:22px;
+    font-weight:bold;
+    padding: 16px 0;
+    color: var(--deep);
+    cursor:pointer;
+    box-shadow: 0 3px 0 #cfeaf3;
+  }
+  .choice-btn:disabled{ cursor:default; }
+  .choice-btn.correct{
+    background: #d9f7e6;
+    border-color: var(--leaf);
+    color: var(--leaf-dark);
+    box-shadow: 0 3px 0 var(--leaf);
+  }
+  .choice-btn.wrong{
+    background: #ffe3e0;
+    border-color: var(--coral);
+    color: var(--coral-dark);
+    box-shadow: 0 3px 0 var(--coral);
+  }
+  .feedback{
+    text-align:center;
+    font-size:15px;
+    font-weight:bold;
+    min-height: 22px;
+    margin-bottom: 10px;
+  }
+  .feedback.good{ color: var(--leaf-dark); }
+  .feedback.bad{ color: var(--coral-dark); }
+  .explain-box{
+    display:none;
+    background: var(--sand);
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .explain-box.show{ display:block; }
+  .explain-title{ font-size:14px; font-weight:bold; color: var(--gold-dark); margin-bottom:8px; }
+  .explain-groups{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .explain-groups span{ background:white; border-radius:10px; padding:4px 6px; font-size:18px; }
+  .explain-steps{ font-size:14px; color: var(--ink); line-height:1.6; }
+  .explain-steps strong{ color: var(--gold-dark); }
+  .reef-wrap{ margin-top: 6px; }
+  .reef-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--sea); margin-bottom:6px; }
+  .reef-bar{ height: 14px; background: #d4f1fb; border-radius: 20px; overflow:hidden; border: 2px solid white; }
+  .reef-fill{ height:100%; background: linear-gradient(90deg, var(--leaf), var(--gold)); transition: width 0.4s ease; }
+  .friends{ display:flex; justify-content:center; gap: 14px; font-size: 26px; margin-top: 14px; min-height: 34px; }
+  .friends span{ opacity:0.15; transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.7); }
+  .friends span.unlocked{ opacity:1; transform: scale(1); }
+  .next-btn{
+    display:block;
+    width:100%;
+    background: var(--sea);
+    color:white;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    padding: 14px 0;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--deep);
+    cursor:pointer;
+    margin-top: 8px;
+  }
+  .next-btn:active{ transform: translateY(3px); box-shadow: 0 1px 0 var(--deep); }
+  .finish-btn{
+    display:block;
+    width:100%;
+    background: white;
+    color: var(--sea);
+    border: 2px solid #cfeaf3;
+    font-weight:bold;
+    font-size:14px;
+    padding: 12px 0;
+    border-radius: 14px;
+    cursor:pointer;
+    margin-top: 18px;
+  }
+  .overlay{
+    position:absolute;
+    inset:0;
+    background: rgba(7,59,76,0.92);
+    color:white;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 24px 20px;
+    border-radius: 24px;
+    overflow-y:auto;
+  }
+  .overlay.show{ display:flex; }
+  .overlay .big{ font-size: 44px; margin-bottom: 8px; }
+  .overlay h2{ margin: 0 0 6px; font-size: 19px; }
+  .overlay p{ margin: 0 0 14px; font-size: 13px; opacity: 0.9; }
+  .overlay button{
+    background: var(--gold);
+    color: var(--gold-dark);
+    border:none;
+    font-weight:bold;
+    font-size:14px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    cursor:pointer;
+    margin-top: 6px;
+  }
+  .overlay button.secondary{
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.5);
+  }
+  .report-card{
+    background: white;
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 16px;
+    width:100%;
+    max-width: 380px;
+    text-align:left;
+    margin-bottom: 14px;
+  }
+  .report-card .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eef4f7;
+  }
+  .report-card .score{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    color: var(--leaf-dark);
+    padding: 8px 0;
+  }
+  .report-list{ font-size:12px; margin-top:8px; }
+  .report-list .heading{ font-weight:bold; color: var(--sea); margin: 8px 0 4px; }
+  .report-list .item{ padding: 2px 0; }
+  .report-list .item.wrong{ color: var(--coral-dark); }
+  .report-list .item.right{ color: var(--leaf-dark); }
+  .btn-row{ display:flex; flex-wrap:wrap; gap:8px; width:100%; max-width: 380px; }
+  .btn-row button{ flex:1; min-width: 100px; }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <div class="topbar" id="topbar">
+    <button class="icon-btn" id="backBtn" aria-label="back to menu">←</button>
+    <div style="flex:1;"></div>
+    <div class="pearl-count" id="pearlBadge"><span>🦪</span><span id="pearlCount">0</span></div>
+  </div>
+
+  <!-- ---------- Dashboard ---------- -->
+  <div class="dash" id="dashboardScreen">
+    <div class="hero">
+      <button class="parent-area-btn" id="parentAreaBtn">⚙ parent area</button>
+      <div class="eyebrow">ocean control · explorer remi</div>
+      <div class="icon">🌊</div>
+      <h1>Remi's Ocean Treasure Hunt</h1>
+      <p>Answer questions correctly to sail the map and find new islands!</p>
+    </div>
+
+    <div class="ocean-tracker" id="oceanTracker">
+      <span class="stop" data-icon="🐠">🐠</span>
+      <span class="stop" data-icon="🐚">🐚</span>
+      <span class="stop" data-icon="🐢">🐢</span>
+      <span class="stop" data-icon="🐙">🐙</span>
+      <span class="stop" data-icon="💎">💎</span>
+    </div>
+
+    <div class="dash-stats">
+      <div class="dash-stat">
+        <div class="num" id="dashPearls">🦪 0</div>
+        <div class="lbl">pearls collected</div>
+      </div>
+      <div class="dash-stat">
+        <div class="num" id="dashStreak">🔥 0</div>
+        <div class="lbl">day streak</div>
+      </div>
+      <div class="dash-stat">
+        <div class="num" id="dashBestStreak">🏆 0</div>
+        <div class="lbl">best streak</div>
+      </div>
+      <div class="dash-stat">
+        <div class="num" id="dashToday">00:00</div>
+        <div class="lbl">today / 10:00 goal</div>
+      </div>
+    </div>
+    <div class="weekdays" id="weekdaysDash"></div>
+    <div class="dash-heading">choose what to practice</div>
+    <div class="mode-grid">
+      <button class="mode-card c-mult" data-mode="mult">
+        <div class="icon">✖️</div>
+        <div class="name">Times Table Tide</div>
+        <div class="sub">choose your tables — plus find the missing number</div>
+      </button>
+      <button class="mode-card c-add" data-mode="add">
+        <div class="icon">➕</div>
+        <div class="name">Addition Bay</div>
+        <div class="sub">add numbers up to 20</div>
+      </button>
+      <button class="mode-card c-sub" data-mode="sub">
+        <div class="icon">➖</div>
+        <div class="name">Subtraction Shore</div>
+        <div class="sub">take away numbers up to 20</div>
+      </button>
+      <button class="mode-card c-place" data-mode="place">
+        <div class="icon">🔢</div>
+        <div class="name">Place Value Probe</div>
+        <div class="sub">digit values up to 999</div>
+      </button>
+      <button class="mode-card c-div" data-mode="div">
+        <div class="icon">➗</div>
+        <div class="name">Division Dock</div>
+        <div class="sub">split into equal groups</div>
+      </button>
+      <button class="mode-card c-bigmult" data-mode="bigmult">
+        <div class="icon">🐋</div>
+        <div class="name">Big Number Multiply</div>
+        <div class="sub">2-digit x 1-digit multiplication</div>
+      </button>
+      <button class="mode-card wide" data-mode="mixed">
+        <div class="icon">🌊</div>
+        <div class="name">Deep Sea Challenge</div>
+        <div class="sub">a bit of everything — extra tricky!</div>
+      </button>
+    </div>
+    <p style="text-align:center; font-size:11px; color:var(--sea); margin-top:16px;">Built for Remi · Singapore Maths practice · 🐚 keep going, you're doing great</p>
+  </div>
+
+  <!-- ---------- Parents dashboard ---------- -->
+  <div class="dash" id="parentsScreen" style="display:none;">
+    <div class="parents-heading-row">
+      <button class="icon-btn-inline" id="parentsBackBtn" aria-label="back to menu">←</button>
+      <div class="dash-heading">👪 parents dashboard</div>
+    </div>
+
+    <div class="dash-stats">
+      <div class="dash-stat"><div class="num" id="pPearls">🦪 0</div><div class="lbl">pearls collected</div></div>
+      <div class="dash-stat"><div class="num" id="pStreak">🔥 0</div><div class="lbl">day streak</div></div>
+      <div class="dash-stat"><div class="num" id="pBestStreak">🏆 0</div><div class="lbl">best streak</div></div>
+      <div class="dash-stat"><div class="num" id="pToday">00:00</div><div class="lbl">today / 10:00 goal</div></div>
+    </div>
+    <div class="dash-stats">
+      <div class="dash-stat"><div class="num" id="pAllTime">00:00</div><div class="lbl">all-time practice</div></div>
+      <div class="dash-stat"><div class="num" id="pSessions">0</div><div class="lbl">sessions logged</div></div>
+    </div>
+
+    <div class="weekdays" id="weekdaysParents"></div>
+
+    <div class="dash-heading">accuracy by skill</div>
+    <div class="mini-card" id="skillBreakdown"></div>
+
+    <div class="dash-heading">recent sessions</div>
+    <div class="mini-card" id="recentSessions"></div>
+
+    <button class="finish-btn" id="downloadHistoryBtn">download full history for tutor</button>
+  </div>
+
+  <!-- ---------- Times table selector ---------- -->
+  <div class="dash" id="tableSelectScreen" style="display:none;">
+    <div class="parents-heading-row">
+      <button class="icon-btn-inline" id="tableSelectBackBtn" aria-label="back to menu">←</button>
+      <div class="dash-heading">✖️ times table tide — pick your tables</div>
+    </div>
+    <p style="font-size:13px; color:var(--sea); margin-top:-6px; margin-bottom:16px;">Tap to choose which times tables to practice. You can pick just one, like 6, or several at once.</p>
+
+    <div class="quick-row">
+      <button id="selectAllTablesBtn">select all</button>
+      <button id="clearAllTablesBtn">clear all</button>
+    </div>
+
+    <div class="table-grid" id="tableGrid"></div>
+
+    <div class="select-error" id="tableSelectError">pick at least one times table to start</div>
+
+    <button class="finish-btn" id="startTablePracticeBtn" style="background:var(--gold); color:var(--gold-dark); border-color:var(--gold-dark);">start practicing</button>
+  </div>
+
+  <!-- ---------- Game screen ---------- -->
+  <div id="gameScreen" style="display:none;">
+    <div class="statsbar">
+      <div class="timer-block">
+        <div class="timer-row">
+          <span>⏱</span>
+          <span class="big" id="timerDisplay">00:00</span>
+          <span>/ 10:00 goal today</span>
+        </div>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:0%"></div></div>
+      </div>
+      <div class="streak-block">
+        <div class="big" id="streakCount">🔥 0</div>
+        <div>day streak</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="question-card">
+        <div class="op-badge" id="opBadge">times tables</div>
+        <div class="question-label" id="questionLabel">how many fish altogether?</div>
+        <div class="equation" id="equation">6 x 4 = ?</div>
+        <div class="build-hint" id="buildHint">tap the button to build the answer and watch the total change</div>
+        <div class="tap-groups" id="tapGroups"></div>
+        <button class="add-btn" id="addGroupBtn">add a group of 6 🐟</button>
+        <div class="running-total" id="runningTotal">total so far: 0</div>
+      </div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="explain-box" id="explainBox">
+        <div class="explain-title">let's work it out together</div>
+        <div class="explain-groups" id="explainGroups"></div>
+        <div class="explain-steps" id="explainSteps"></div>
+      </div>
+
+      <div class="reef-wrap">
+        <div class="reef-label">
+          <span>coral reef growing</span>
+          <span id="reefText">0 / 10 shells</span>
+        </div>
+        <div class="reef-bar"><div class="reef-fill" id="reefFill" style="width:0%"></div></div>
+        <div class="friends" id="friends">
+          <span data-need="2">🐠</span>
+          <span data-need="4">🐢</span>
+          <span data-need="6">🦀</span>
+          <span data-need="8">🐬</span>
+          <span data-need="10">🐙</span>
+        </div>
+      </div>
+
+      <button class="finish-btn" id="finishBtn">finish session and get report</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="celebrate">
+    <div class="big">🏆</div>
+    <h2>the reef is full of friends!</h2>
+    <p>Remi collected 10 shells and every sea friend came to visit.</p>
+    <button id="playAgainBtn">play again</button>
+  </div>
+
+  <div class="overlay" id="reportOverlay">
+    <div class="big">📋</div>
+    <h2>session report</h2>
+    <div class="report-card" id="reportCard"></div>
+    <div class="btn-row">
+      <button id="downloadReportBtn">download report</button>
+      <button class="secondary" id="keepPlayingBtn">keep practicing</button>
+      <button class="secondary" id="menuFromReportBtn">back to menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var GOAL_SECONDS = 600;      // 10 minutes
+  var REIGNITE_SECONDS = 900;  // 15 minutes
+  var STORAGE_KEY = 'remi-ocean-math-data';
+  var DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var MULT_TABLES = [2, 3, 4, 5, 6, 7, 10];
+  var selectedMultTables = []; // which tables "Times Table Tide" practices — starts empty so a tap clearly means "add this one"
+
+  var currentMode = null; // 'mult' | 'add' | 'sub' | 'mixed'
+  var order = [];
+  var factIndex = 0;
+  var pearls = 0;
+  var pearlsSinceCommit = 0;
+  var shells = 0;
+  var shellsNeeded = 10;
+  var answered = false;
+
+  var currentQuestion = null; // {type, a, b, answer}
+  var stepsDone = 0;
+  var maxSteps = 0;
+
+  var data = { minutesByDate: {}, sessions: [], totalPearls: 0, bestStreak: 0 };
+  var todayIso = isoDate(new Date());
+  var minutesTodayBeforeSegment = 0;
+  var segmentStart = Date.now();
+  var timerInterval = null;
+  var sessionLog = []; // {equation, chosen, correctAnswer, isCorrect}
+  var lastSegmentSeconds = 0;
+
+  function isoDate(d){
+    var y = d.getFullYear();
+    var m = String(d.getMonth()+1).padStart(2,'0');
+    var day = String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function mmss(totalSeconds){ return pad2(Math.floor(totalSeconds/60)) + ':' + pad2(totalSeconds%60); }
+  function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // ---------- Question generation ----------
+  function fishBlock(count){
+    // Compact display for large groups so the visual doesn't overflow with
+    // rows of dozens of emoji — used for 2-digit multiplicands.
+    return (count <= 12) ? '🐟'.repeat(count) : ('🐟 x' + count);
+  }
+
+  function generateMultFacts(n, tables){
+    var pool = tables && tables.length ? tables : MULT_TABLES;
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = pool[randInt(0, pool.length - 1)];
+      var b = randInt(2, 12);
+      var product = a * b;
+      var subtype = Math.random() < 0.5 ? 'product' : 'factor';
+      out.push({
+        type: 'mult',
+        subtype: subtype,
+        a: a,
+        b: b,
+        product: product,
+        answer: (subtype === 'product') ? product : b
+      });
+    }
+    return out;
+  }
+  function generateAddFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = randInt(2, 10);
+      var b = randInt(2, 10);
+      out.push({ type:'add', a:a, b:b, answer:a+b });
+    }
+    return out;
+  }
+  function generateSubFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = randInt(5, 20);
+      var b = randInt(1, Math.min(a, 10));
+      out.push({ type:'sub', a:a, b:b, answer:a-b });
+    }
+    return out;
+  }
+  function generateBigMultFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var a = randInt(11, 49);
+      var b = randInt(2, 9);
+      out.push({ type:'bigmult', a:a, b:b, product:a*b, answer:a*b });
+    }
+    return out;
+  }
+  function generateDivFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var divisor = MULT_TABLES[randInt(0, MULT_TABLES.length - 1)];
+      var quotient = randInt(2, 12);
+      var dividend = divisor * quotient;
+      out.push({ type:'div', a:dividend, b:divisor, answer:quotient });
+    }
+    return out;
+  }
+  function generatePlaceFacts(n){
+    var out = [];
+    for(var i = 0; i < n; i++){
+      var number = randInt(10, 999);
+      var places = (number >= 100) ? ['ones', 'tens', 'hundreds'] : ['ones', 'tens'];
+      var place = places[randInt(0, places.length - 1)];
+      var digit = (place === 'ones') ? (number % 10) : (place === 'tens') ? Math.floor(number / 10) % 10 : Math.floor(number / 100) % 10;
+      var placeValue = (place === 'ones') ? digit : (place === 'tens') ? digit * 10 : digit * 100;
+      var subtype = Math.random() < 0.5 ? 'digit' : 'value';
+      out.push({
+        type: 'place',
+        subtype: subtype,
+        number: number,
+        place: place,
+        digit: digit,
+        placeValue: placeValue,
+        answer: (subtype === 'digit') ? digit : placeValue
+      });
+    }
+    return out;
+  }
+
+  function buildPool(){
+    if(currentMode === 'mult') return shuffle(generateMultFacts(24, selectedMultTables));
+    if(currentMode === 'add') return shuffle(generateAddFacts(24));
+    if(currentMode === 'sub') return shuffle(generateSubFacts(24));
+    if(currentMode === 'place') return shuffle(generatePlaceFacts(24));
+    if(currentMode === 'div') return shuffle(generateDivFacts(24));
+    if(currentMode === 'bigmult') return shuffle(generateBigMultFacts(24));
+    return shuffle(
+      generateMultFacts(6).concat(
+        generateAddFacts(6),
+        generateSubFacts(6),
+        generatePlaceFacts(6),
+        generateDivFacts(6),
+        generateBigMultFacts(6)
+      )
+    );
+  }
+
+  function equationText(q){
+    if(q.type === 'mult'){
+      if(q.subtype === 'factor') return q.a + ' x ? = ' + q.product;
+      return q.a + ' x ' + q.b + ' = ?';
+    }
+    if(q.type === 'add') return q.a + ' + ' + q.b + ' = ?';
+    if(q.type === 'sub') return q.a + ' - ' + q.b + ' = ?';
+    if(q.type === 'bigmult') return q.a + ' x ' + q.b + ' = ?';
+    if(q.type === 'div') return q.a + ' ÷ ' + q.b + ' = ?';
+    if(q.type === 'place') return String(q.number);
+  }
+  // The full, resolved number sentence — always shown as a x b = product,
+  // regardless of which part the question was hiding. Used for feedback and reports.
+  function fullFact(q){
+    if(q.type === 'mult') return q.a + ' x ' + q.b + ' = ' + q.product;
+    if(q.type === 'add') return q.a + ' + ' + q.b + ' = ' + q.answer;
+    if(q.type === 'sub') return q.a + ' - ' + q.b + ' = ' + q.answer;
+    if(q.type === 'bigmult') return q.a + ' x ' + q.b + ' = ' + q.product;
+    if(q.type === 'div') return q.a + ' ÷ ' + q.b + ' = ' + q.answer;
+    if(q.type === 'place'){
+      return 'in ' + q.number + ', the ' + q.place + ' digit is ' + q.digit + ' (value ' + q.placeValue + ')';
+    }
+  }
+  function promptTextFor(q){
+    if(q.type === 'mult' && q.subtype === 'factor') return 'how many groups of ' + q.a + ' make ' + q.product + ' fish?';
+    if(q.type === 'sub') return 'how many fish are left?';
+    if(q.type === 'bigmult') return 'how many fish altogether?';
+    if(q.type === 'div') return 'how many fish in each group?';
+    if(q.type === 'place'){
+      return (q.subtype === 'digit')
+        ? 'what digit is in the ' + q.place + ' place?'
+        : 'what is the value of the digit in the ' + q.place + ' place?';
+    }
+    return 'how many fish altogether?';
+  }
+  function badgeFor(q){
+    if(q.type === 'mult') return { text: (q.subtype === 'factor') ? 'times tables — find the missing number' : 'times tables', cls: 'mult' };
+    if(q.type === 'add') return { text: 'addition', cls: 'add' };
+    if(q.type === 'sub') return { text: 'subtraction', cls: 'sub' };
+    if(q.type === 'bigmult') return { text: 'big number multiply', cls: 'bigmult' };
+    if(q.type === 'div') return { text: 'division', cls: 'div' };
+    if(q.type === 'place') return { text: 'place value', cls: 'place' };
+  }
+
+  // ---------- Storage ----------
+  async function loadData(){
+    try{
+      var result = await window.storage.get(STORAGE_KEY, false);
+      if(result && result.value){
+        var parsed = JSON.parse(result.value);
+        if(parsed && typeof parsed === 'object'){
+          data.minutesByDate = parsed.minutesByDate || {};
+          data.sessions = parsed.sessions || [];
+          data.totalPearls = parsed.totalPearls || 0;
+          data.bestStreak = parsed.bestStreak || 0;
+          if(parsed.selectedMultTables && parsed.selectedMultTables.length){
+            selectedMultTables = parsed.selectedMultTables.filter(function(t){ return MULT_TABLES.indexOf(t) !== -1; });
+            if(selectedMultTables.length === 0){ selectedMultTables = MULT_TABLES.slice(); }
+          }
+        }
+      }
+    } catch(err){
+      data = { minutesByDate: {}, sessions: [], totalPearls: 0, bestStreak: 0 };
+    }
+  }
+  async function saveData(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(data), false);
+    } catch(err){
+      console.error('could not save progress', err);
+    }
+  }
+
+  // ---------- Streak ----------
+  function computeStreak(minutesByDate, todayIsoStr){
+    var keys = Object.keys(minutesByDate);
+    if(keys.length === 0) return 0;
+    keys.sort();
+    var cursor = new Date(keys[0] + 'T00:00:00');
+    var end = new Date(todayIsoStr + 'T00:00:00');
+    var streak = 0;
+    var missedPending = false;
+    while(cursor <= end){
+      var iso = isoDate(cursor);
+      var seconds = minutesByDate[iso] || 0;
+      if(seconds >= GOAL_SECONDS){
+        if(missedPending){
+          streak = (seconds >= REIGNITE_SECONDS) ? streak + 1 : 1;
+          missedPending = false;
+        } else {
+          streak += 1;
+        }
+      } else {
+        if(!missedPending){
+          missedPending = true;
+        } else {
+          streak = 0;
+        }
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return streak;
+  }
+
+  function mondayOf(date){
+    var d = new Date(date);
+    var day = d.getDay();
+    var diff = (day === 0) ? -6 : (1 - day);
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+
+  function renderWeekdays(containerId){
+    var wrap = document.getElementById(containerId);
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    var monday = mondayOf(new Date());
+    for(var i = 0; i < 7; i++){
+      var d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      var iso = isoDate(d);
+      var seconds = data.minutesByDate[iso] || 0;
+      var isToday = iso === todayIso;
+      var isDone = seconds >= GOAL_SECONDS;
+
+      var chip = document.createElement('div');
+      chip.className = 'day-chip' + (isDone ? ' done' : '') + (isToday ? ' today' : '');
+      var dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.textContent = isDone ? '✓' : '';
+      chip.appendChild(dot);
+      var label = document.createElement('div');
+      label.textContent = DAY_ABBR[i];
+      chip.appendChild(label);
+      wrap.appendChild(chip);
+    }
+  }
+
+  function renderStreakText(elementId){
+    var el = document.getElementById(elementId);
+    if(!el) return;
+    var streak = computeStreak(data.minutesByDate, todayIso);
+    el.textContent = '🔥 ' + streak;
+  }
+
+  var TRACKER_MILESTONES = [0, 10, 30, 60, 100];
+
+  function renderOceanTracker(){
+    var total = data.totalPearls || 0;
+    var currentIndex = 0;
+    for(var i = 0; i < TRACKER_MILESTONES.length; i++){
+      if(total >= TRACKER_MILESTONES[i]) currentIndex = i;
+    }
+    var stops = document.querySelectorAll('#oceanTracker .stop');
+    stops.forEach(function(stop, i){
+      stop.classList.remove('reached', 'current');
+      if(i < currentIndex) stop.classList.add('reached');
+      if(i === currentIndex) stop.classList.add('current');
+    });
+  }
+
+  function renderDashboardSummary(){
+    renderStreakText('dashStreak');
+    document.getElementById('dashBestStreak').textContent = '🏆 ' + (data.bestStreak || 0);
+    document.getElementById('dashPearls').textContent = '🦪 ' + (data.totalPearls || 0);
+    document.getElementById('dashToday').textContent = mmss(minutesTodayBeforeSegment);
+    renderWeekdays('weekdaysDash');
+    renderOceanTracker();
+  }
+
+  // ---------- Timer ----------
+  function currentTodaySeconds(){
+    var liveSeconds = Math.floor((Date.now() - segmentStart) / 1000);
+    return minutesTodayBeforeSegment + liveSeconds;
+  }
+  function tickTimer(){
+    var totalSeconds = currentTodaySeconds();
+    document.getElementById('timerDisplay').textContent = mmss(totalSeconds);
+    var pct = Math.min(100, Math.round((totalSeconds / GOAL_SECONDS) * 100));
+    var fill = document.getElementById('timerFill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('goal-hit', totalSeconds >= GOAL_SECONDS);
+  }
+  function startTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    segmentStart = Date.now();
+    tickTimer();
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  // ---------- Screen switching ----------
+  function showScreen(name){
+    document.getElementById('dashboardScreen').style.display = (name === 'dashboard') ? 'block' : 'none';
+    document.getElementById('parentsScreen').style.display = (name === 'parents') ? 'block' : 'none';
+    document.getElementById('tableSelectScreen').style.display = (name === 'tableSelect') ? 'block' : 'none';
+    document.getElementById('gameScreen').style.display = (name === 'game') ? 'block' : 'none';
+    document.getElementById('topbar').style.display = (name === 'game') ? 'flex' : 'none';
+    document.getElementById('backBtn').style.display = (name === 'game') ? 'flex' : 'none';
+    document.getElementById('pearlBadge').style.display = (name === 'game') ? 'flex' : 'none';
+
+    if(name === 'dashboard') renderDashboardSummary();
+    if(name === 'parents') renderParentsScreen();
+    if(name === 'tableSelect') renderTableSelect();
+  }
+  function showDashboard(){ showScreen('dashboard'); }
+  function showGameScreen(){ showScreen('game'); }
+  function showParents(){ showScreen('parents'); }
+  function showTableSelect(){ showScreen('tableSelect'); }
+
+  function renderTableSelect(){
+    var grid = document.getElementById('tableGrid');
+    grid.innerHTML = '';
+    document.getElementById('tableSelectError').classList.remove('show');
+    MULT_TABLES.forEach(function(t){
+      var chip = document.createElement('button');
+      chip.className = 'table-chip' + (selectedMultTables.indexOf(t) !== -1 ? ' selected' : '');
+      chip.setAttribute('data-table', t);
+      chip.innerHTML = t + '<span class="lbl">times table</span>';
+      chip.addEventListener('click', function(){
+        var val = parseInt(chip.getAttribute('data-table'), 10);
+        var idx = selectedMultTables.indexOf(val);
+        if(idx === -1){
+          selectedMultTables.push(val);
+          chip.classList.add('selected');
+        } else {
+          selectedMultTables.splice(idx, 1);
+          chip.classList.remove('selected');
+        }
+        if(selectedMultTables.length > 0){
+          document.getElementById('tableSelectError').classList.remove('show');
+        }
+      });
+      grid.appendChild(chip);
+    });
+  }
+
+  function allTimeSeconds(){
+    return Object.values(data.minutesByDate).reduce(function(sum, s){ return sum + s; }, 0);
+  }
+
+  function renderParentsScreen(){
+    renderStreakText('pStreak');
+    document.getElementById('pBestStreak').textContent = '🏆 ' + (data.bestStreak || 0);
+    document.getElementById('pPearls').textContent = '🦪 ' + (data.totalPearls || 0);
+    document.getElementById('pToday').textContent = mmss(minutesTodayBeforeSegment);
+    document.getElementById('pAllTime').textContent = mmss(allTimeSeconds());
+    document.getElementById('pSessions').textContent = data.sessions.length;
+    renderWeekdays('weekdaysParents');
+
+    var modes = ['mult', 'add', 'sub', 'place', 'div', 'bigmult', 'mixed'];
+    var totals = {};
+    modes.forEach(function(m){ totals[m] = { correct: 0, wrong: 0 }; });
+    data.sessions.forEach(function(s){
+      var m = s.mode || 'mixed';
+      if(!totals[m]) totals[m] = { correct: 0, wrong: 0 };
+      totals[m].correct += s.correct || 0;
+      totals[m].wrong += s.wrong || 0;
+    });
+
+    var skillHtml = '';
+    modes.forEach(function(m){
+      var t = totals[m];
+      var attempted = t.correct + t.wrong;
+      var pct = attempted > 0 ? Math.round((t.correct / attempted) * 100) : null;
+      skillHtml += '<div class="row"><span class="name">' + modeLabel(m) + '</span><span class="val">' +
+        (attempted > 0 ? (t.correct + ' / ' + attempted + ' (' + pct + '%)') : 'not tried yet') +
+        '</span></div>';
+    });
+    document.getElementById('skillBreakdown').innerHTML = skillHtml;
+
+    var recent = data.sessions.slice(-10).reverse();
+    var recentHtml = '';
+    if(recent.length === 0){
+      recentHtml = '<div class="row"><span class="val">no sessions logged yet</span></div>';
+    } else {
+      recent.forEach(function(s){
+        var attempted = (s.correct || 0) + (s.wrong || 0);
+        recentHtml += '<div class="row"><span class="name">' + s.date + ' — ' + modeLabel(s.mode || 'mixed') + '</span><span class="val">' +
+          mmss(s.seconds) + ', ' + (s.correct || 0) + '/' + attempted + '</span></div>';
+      });
+    }
+    document.getElementById('recentSessions').innerHTML = recentHtml;
+  }
+
+  function buildFullHistoryText(){
+    var lines = [];
+    lines.push('Ocean Treasure Hunt — full history');
+    lines.push('Learner: Remi');
+    lines.push('Generated: ' + niceDate());
+    lines.push('Current streak: ' + computeStreak(data.minutesByDate, todayIso) + ' day(s)');
+    lines.push('Best streak: ' + (data.bestStreak || 0) + ' day(s)');
+    lines.push('Pearls collected (all-time): ' + (data.totalPearls || 0));
+    lines.push('All-time practice time: ' + mmss(allTimeSeconds()));
+    lines.push('Sessions logged: ' + data.sessions.length);
+    lines.push('');
+    lines.push('Accuracy by skill:');
+    var modes = ['mult', 'add', 'sub', 'place', 'div', 'bigmult', 'mixed'];
+    var totals = {};
+    modes.forEach(function(m){ totals[m] = { correct: 0, wrong: 0 }; });
+    data.sessions.forEach(function(s){
+      var m = s.mode || 'mixed';
+      if(!totals[m]) totals[m] = { correct: 0, wrong: 0 };
+      totals[m].correct += s.correct || 0;
+      totals[m].wrong += s.wrong || 0;
+    });
+    modes.forEach(function(m){
+      var t = totals[m];
+      var attempted = t.correct + t.wrong;
+      var pct = attempted > 0 ? Math.round((t.correct / attempted) * 100) : 0;
+      lines.push('  ' + modeLabel(m) + ': ' + t.correct + ' / ' + attempted + (attempted > 0 ? ' (' + pct + '%)' : ' (not tried yet)'));
+    });
+    lines.push('');
+    lines.push('Session-by-session log:');
+    data.sessions.forEach(function(s){
+      var attempted = (s.correct || 0) + (s.wrong || 0);
+      lines.push('  ' + s.date + ' — ' + modeLabel(s.mode || 'mixed') + ' — ' + mmss(s.seconds) + ' — ' + (s.correct || 0) + '/' + attempted + ' correct');
+    });
+    return lines.join('\n');
+  }
+
+  function downloadFullHistory(){
+    var text = buildFullHistoryText();
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'remi-math-full-history-' + todayIso + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function startMode(mode){
+    currentMode = mode;
+    order = [];
+    factIndex = 0;
+    pearls = 0;
+    pearlsSinceCommit = 0;
+    shells = 0;
+    document.getElementById('pearlCount').textContent = 0;
+    document.querySelectorAll('#friends span').forEach(function(el){ el.classList.remove('unlocked'); });
+    document.getElementById('celebrate').classList.remove('show');
+    sessionLog = [];
+
+    showGameScreen();
+    updateReef();
+    renderStreakText('streakCount');
+    startTimer();
+    newQuestion();
+  }
+
+  // ---------- Question flow ----------
+  function nearMissChoices(correct){
+    var options = new Set([correct]);
+    var pool = (correct <= 12) ? [1, -1, 2, -2, 3, -3] : [1, -1, 2, -2, 3, -3, 5, -5, 10, -10];
+    var deltas = shuffle(pool);
+    var di = 0;
+    while(options.size < 3 && di < deltas.length){
+      var val = correct + deltas[di];
+      di++;
+      if(val > 0 && val !== correct) options.add(val);
+    }
+    return shuffle(Array.from(options));
+  }
+
+  function placeValueChoices(q){
+    // Distractors that reflect real place-value mix-ups: an adjacent digit,
+    // or the value from a neighbouring place, rather than arbitrary jumps.
+    var options = new Set([q.answer]);
+    if(q.subtype === 'digit'){
+      var digitDeltas = shuffle([1, -1, 2, -2, 3, -3]);
+      var di = 0;
+      while(options.size < 3 && di < digitDeltas.length){
+        var val = q.answer + digitDeltas[di];
+        di++;
+        if(val >= 0 && val <= 9 && val !== q.answer) options.add(val);
+      }
+      // fall back to any other digit if we ran out of room near the edges
+      var fallback = 0;
+      while(options.size < 3 && fallback <= 9){
+        if(fallback !== q.answer) options.add(fallback);
+        fallback++;
+      }
+    } else {
+      var step = (q.place === 'hundreds') ? 100 : (q.place === 'tens') ? 10 : 1;
+      var valueDeltas = shuffle([1, -1, 2, -2]);
+      var vi = 0;
+      while(options.size < 3 && vi < valueDeltas.length){
+        var v = q.answer + valueDeltas[vi] * step;
+        vi++;
+        if(v >= 0 && v !== q.answer) options.add(v);
+      }
+      // a common confusion: mixing up the digit itself with its place value
+      if(options.size < 3 && q.digit !== q.answer && q.digit > 0){ options.add(q.digit); }
+    }
+    return shuffle(Array.from(options)).slice(0, 3);
+  }
+
+  function newQuestion(){
+    answered = false;
+    if(order.length === 0){
+      order = buildPool();
+      factIndex = 0;
+    }
+    currentQuestion = order[factIndex];
+    factIndex++;
+    if(factIndex >= order.length){ factIndex = 0; order = buildPool(); }
+
+    var badge = badgeFor(currentQuestion);
+    var badgeEl = document.getElementById('opBadge');
+    badgeEl.textContent = badge.text;
+    badgeEl.className = 'op-badge ' + badge.cls;
+
+    document.getElementById('questionLabel').textContent = promptTextFor(currentQuestion);
+    document.getElementById('equation').textContent = equationText(currentQuestion);
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+
+    var explainBox = document.getElementById('explainBox');
+    explainBox.classList.remove('show');
+    document.getElementById('explainGroups').innerHTML = '';
+    document.getElementById('explainSteps').innerHTML = '';
+
+    setupVisualBuilder();
+    renderChoices();
+  }
+
+  function updateProgress(text){
+    document.getElementById('runningTotal').textContent = text;
+  }
+
+  function setupVisualBuilder(){
+    var wrap = document.getElementById('tapGroups');
+    wrap.innerHTML = '';
+    stepsDone = 0;
+    var addBtn = document.getElementById('addGroupBtn');
+    var hint = document.getElementById('buildHint');
+    var progressEl = document.getElementById('runningTotal');
+    addBtn.disabled = false;
+    addBtn.style.display = '';
+    hint.style.display = '';
+    progressEl.style.display = '';
+
+    if(currentQuestion.type === 'place'){
+      // No build scaffold for place value — the number itself is already
+      // fully shown, so there's nothing safe left to reveal via tapping.
+      maxSteps = 0;
+      addBtn.style.display = 'none';
+      hint.style.display = 'none';
+      progressEl.style.display = 'none';
+      return;
+    }
+
+    if(currentQuestion.type === 'mult' && currentQuestion.subtype === 'factor'){
+      // Reverse mode: the product is already shown in the equation, the missing
+      // factor is the secret. Cap taps at a fixed number (not tied to the real
+      // answer) so the button disabling never gives away when he's "found it".
+      maxSteps = 12;
+      addBtn.textContent = 'add a group of ' + currentQuestion.a + ' 🐟';
+      hint.textContent = 'tap to add groups of ' + currentQuestion.a + ', then count how many groups you needed to reach ' + currentQuestion.product;
+      updateProgress('fish so far: 0 / ' + currentQuestion.product);
+    } else if(currentQuestion.type === 'mult' || currentQuestion.type === 'bigmult'){
+      maxSteps = currentQuestion.b;
+      addBtn.textContent = 'add a group of ' + currentQuestion.a + ' 🐟';
+      hint.textContent = 'tap to add a group of ' + currentQuestion.a + ' fish, ' + currentQuestion.b + ' times';
+      updateProgress('groups added: 0 / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'add'){
+      maxSteps = currentQuestion.b;
+      var startBox = document.createElement('div');
+      startBox.className = 'fish-group start-group';
+      startBox.textContent = '🐟'.repeat(currentQuestion.a);
+      wrap.appendChild(startBox);
+      addBtn.textContent = 'add 1 more fish 🐟';
+      hint.textContent = 'start with ' + currentQuestion.a + ' fish, tap to add ' + currentQuestion.b + ' more';
+      updateProgress('fish added: 0 / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'sub'){
+      maxSteps = currentQuestion.b;
+      var startBox2 = document.createElement('div');
+      startBox2.className = 'fish-group start-group';
+      startBox2.id = 'subGroupBox';
+      startBox2.textContent = '🐟'.repeat(currentQuestion.a);
+      wrap.appendChild(startBox2);
+      addBtn.textContent = 'take one fish away 🐟';
+      hint.textContent = 'start with ' + currentQuestion.a + ' fish, tap to take away ' + currentQuestion.b;
+      updateProgress('taken away: 0 / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'div'){
+      // The dividend (total fish) is known; the number of equal groups is the
+      // secret. Cap taps fixed (not tied to the real quotient) so disabling
+      // the button never gives away the answer.
+      maxSteps = 12;
+      var startBox3 = document.createElement('div');
+      startBox3.className = 'fish-group start-group';
+      startBox3.id = 'divRemainBox';
+      startBox3.textContent = fishBlock(currentQuestion.a);
+      wrap.appendChild(startBox3);
+      addBtn.textContent = 'share out a group of ' + currentQuestion.b + ' 🐟';
+      hint.textContent = 'tap to share out groups of ' + currentQuestion.b + ' until no fish are left, then count your groups';
+      updateProgress('fish remaining: ' + currentQuestion.a + ' / ' + currentQuestion.a);
+    }
+    if(maxSteps === 0){ addBtn.disabled = true; }
+  }
+
+  function handleAddGroup(){
+    if(!currentQuestion || stepsDone >= maxSteps) return;
+    stepsDone++;
+    var wrap = document.getElementById('tapGroups');
+
+    if(currentQuestion.type === 'mult' && currentQuestion.subtype === 'factor'){
+      var fgroup = document.createElement('div');
+      fgroup.className = 'fish-group';
+      fgroup.textContent = fishBlock(currentQuestion.a);
+      wrap.appendChild(fgroup);
+      var fishSoFar = stepsDone * currentQuestion.a;
+      updateProgress('fish so far: ' + fishSoFar + ' / ' + currentQuestion.product);
+    } else if(currentQuestion.type === 'mult' || currentQuestion.type === 'bigmult'){
+      var group = document.createElement('div');
+      group.className = 'fish-group';
+      group.textContent = fishBlock(currentQuestion.a);
+      wrap.appendChild(group);
+      updateProgress('groups added: ' + stepsDone + ' / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'add'){
+      var fish = document.createElement('span');
+      fish.className = 'fish-group added-fish';
+      fish.textContent = '🐟';
+      wrap.appendChild(fish);
+      updateProgress('fish added: ' + stepsDone + ' / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'sub'){
+      var box = document.getElementById('subGroupBox');
+      if(box){
+        var remaining = Math.max(currentQuestion.a - stepsDone, 0);
+        box.textContent = '🐟'.repeat(remaining);
+      }
+      updateProgress('taken away: ' + stepsDone + ' / ' + currentQuestion.b);
+    } else if(currentQuestion.type === 'div'){
+      var dbox = document.getElementById('divRemainBox');
+      var remainingFish = Math.max(currentQuestion.a - stepsDone * currentQuestion.b, 0);
+      if(dbox){ dbox.textContent = fishBlock(remainingFish); }
+      updateProgress('fish remaining: ' + remainingFish + ' / ' + currentQuestion.a);
+    }
+
+    if(stepsDone >= maxSteps){
+      document.getElementById('addGroupBtn').disabled = true;
+    }
+  }
+
+  function renderChoices(){
+    var choicesEl = document.getElementById('choices');
+    choicesEl.innerHTML = '';
+    var opts = (currentQuestion.type === 'place') ? placeValueChoices(currentQuestion) : nearMissChoices(currentQuestion.answer);
+    opts.forEach(function(val){
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = val;
+      btn.onclick = function(){ handleChoice(val, btn); };
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function handleChoice(val, btn){
+    if(answered) return;
+    answered = true;
+    var buttons = document.querySelectorAll('.choice-btn');
+    var feedback = document.getElementById('feedback');
+    var isCorrect = (val === currentQuestion.answer);
+
+    buttons.forEach(function(b){ b.disabled = true; });
+
+    sessionLog.push({
+      equation: fullFact(currentQuestion),
+      chosen: val,
+      correctAnswer: currentQuestion.answer,
+      isCorrect: isCorrect
+    });
+
+    if(isCorrect){
+      btn.classList.add('correct');
+      feedback.textContent = 'yes! ' + fullFact(currentQuestion) + '. a pearl for the treasure chest.';
+      feedback.className = 'feedback good';
+      awardPearl();
+    } else {
+      btn.classList.add('wrong');
+      buttons.forEach(function(b){
+        if(parseInt(b.textContent, 10) === currentQuestion.answer){ b.classList.add('correct'); }
+      });
+      feedback.textContent = 'not quite — but let\'s work it out together.';
+      feedback.className = 'feedback bad';
+      showExplanation();
+    }
+
+    var next = document.createElement('button');
+    next.className = 'next-btn';
+    next.textContent = isCorrect ? 'next question' : 'ok, got it — next question';
+    next.onclick = function(){ next.remove(); newQuestion(); };
+    document.getElementById('explainBox').after(next);
+  }
+
+  function showExplanation(){
+    var q = currentQuestion;
+    var groupsWrap = document.getElementById('explainGroups');
+    groupsWrap.innerHTML = '';
+    var stepsEl = document.getElementById('explainSteps');
+
+    if(q.type === 'mult'){
+      for(var i = 0; i < q.b; i++){
+        var g = document.createElement('span');
+        g.textContent = fishBlock(q.a);
+        groupsWrap.appendChild(g);
+      }
+      var running1 = [];
+      for(var n = 1; n <= q.b; n++){ running1.push(n * q.a); }
+      if(q.subtype === 'factor'){
+        stepsEl.innerHTML =
+          'counting up in ' + q.a + 's until we reach ' + q.product + ':<br>' +
+          running1.join(', ') + '.<br>' +
+          'that\'s ' + q.b + ' groups, so ' + q.a + ' x <strong>' + q.b + '</strong> = ' + q.product;
+      } else {
+        stepsEl.innerHTML =
+          q.b + ' groups of ' + q.a + ' fish.<br>' +
+          'count up in ' + q.a + 's: ' + running1.join(', ') + '.<br>' +
+          q.a + ' x ' + q.b + ' = <strong>' + q.product + '</strong>';
+      }
+    } else if(q.type === 'bigmult'){
+      for(var bi = 0; bi < q.b; bi++){
+        var bg = document.createElement('span');
+        bg.textContent = fishBlock(q.a);
+        groupsWrap.appendChild(bg);
+      }
+      var runningBig = [];
+      for(var bn = 1; bn <= q.b; bn++){ runningBig.push(bn * q.a); }
+      stepsEl.innerHTML =
+        q.b + ' groups of ' + q.a + ' fish.<br>' +
+        'count up in ' + q.a + 's: ' + runningBig.join(', ') + '.<br>' +
+        q.a + ' x ' + q.b + ' = <strong>' + q.product + '</strong>';
+    } else if(q.type === 'div'){
+      var dg = document.createElement('span'); dg.textContent = fishBlock(q.a); groupsWrap.appendChild(dg);
+      var runningDiv = [];
+      var remain = q.a;
+      runningDiv.push(remain);
+      while(remain > 0){ remain -= q.b; runningDiv.push(Math.max(remain, 0)); }
+      stepsEl.innerHTML =
+        'share ' + q.a + ' fish into groups of ' + q.b + '.<br>' +
+        'count back in ' + q.b + 's: ' + runningDiv.join(', ') + '.<br>' +
+        'that\'s ' + q.answer + ' groups, so ' + q.a + ' ÷ ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    } else if(q.type === 'add'){
+      var g1 = document.createElement('span'); g1.textContent = '🐟'.repeat(q.a); groupsWrap.appendChild(g1);
+      var g2 = document.createElement('span'); g2.textContent = '🐟'.repeat(q.b); groupsWrap.appendChild(g2);
+      var running2 = [];
+      for(var m = 0; m <= q.b; m++){ running2.push(q.a + m); }
+      stepsEl.innerHTML =
+        'start with ' + q.a + ' fish, count on ' + q.b + ' more.<br>' +
+        running2.join(', ') + '.<br>' +
+        q.a + ' + ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    } else if(q.type === 'sub'){
+      var g3 = document.createElement('span'); g3.textContent = '🐟'.repeat(q.a); groupsWrap.appendChild(g3);
+      var running3 = [];
+      for(var k = 0; k <= q.b; k++){ running3.push(q.a - k); }
+      stepsEl.innerHTML =
+        'start with ' + q.a + ' fish, count back ' + q.b + '.<br>' +
+        running3.join(', ') + '.<br>' +
+        q.a + ' - ' + q.b + ' = <strong>' + q.answer + '</strong>';
+    } else if(q.type === 'place'){
+      var hundreds = Math.floor(q.number / 100) % 10;
+      var tens = Math.floor(q.number / 10) % 10;
+      var ones = q.number % 10;
+      if(hundreds > 0){
+        var hb = document.createElement('span'); hb.textContent = '🌟'.repeat(hundreds); groupsWrap.appendChild(hb);
+      }
+      if(tens > 0){
+        var tb = document.createElement('span'); tb.textContent = '🐚'.repeat(tens); groupsWrap.appendChild(tb);
+      }
+      var ob = document.createElement('span'); ob.textContent = '🐟'.repeat(ones); groupsWrap.appendChild(ob);
+
+      var parts = [];
+      if(hundreds > 0) parts.push(hundreds + ' hundreds (🌟 = 100 each)');
+      if(tens > 0) parts.push(tens + ' tens (🐚 = 10 each)');
+      parts.push(ones + ' ones (🐟 = 1 each)');
+
+      var askedIsDigit = (q.subtype === 'digit');
+      var resultLine = askedIsDigit
+        ? 'the digit in the ' + q.place + ' place is <strong>' + q.digit + '</strong>'
+        : 'the value of the digit in the ' + q.place + ' place is <strong>' + q.placeValue + '</strong>';
+
+      stepsEl.innerHTML =
+        q.number + ' breaks down into: ' + parts.join(', ') + '.<br>' +
+        resultLine;
+    }
+
+    document.getElementById('explainBox').classList.add('show');
+  }
+
+  function awardPearl(){
+    pearls++;
+    pearlsSinceCommit++;
+    document.getElementById('pearlCount').textContent = pearls;
+    if(shells < shellsNeeded){
+      shells++;
+      updateReef();
+    }
+    if(shells >= shellsNeeded){
+      setTimeout(showCelebration, 700);
+    }
+  }
+
+  function updateReef(){
+    var pct = Math.round((shells / shellsNeeded) * 100);
+    document.getElementById('reefFill').style.width = pct + '%';
+    document.getElementById('reefText').textContent = shells + ' / ' + shellsNeeded + ' shells';
+    document.querySelectorAll('#friends span').forEach(function(el){
+      var need = parseInt(el.getAttribute('data-need'), 10);
+      if(shells >= need){ el.classList.add('unlocked'); }
+    });
+  }
+
+  function showCelebration(){
+    document.getElementById('celebrate').classList.add('show');
+  }
+
+  document.getElementById('playAgainBtn').addEventListener('click', function(){
+    document.getElementById('celebrate').classList.remove('show');
+    pearls = 0;
+    shells = 0;
+    document.getElementById('pearlCount').textContent = 0;
+    updateReef();
+    document.querySelectorAll('#friends span').forEach(function(el){ el.classList.remove('unlocked'); });
+    newQuestion();
+  });
+
+  // ---------- Session saving / report ----------
+  function niceDate(){
+    var d = new Date();
+    return d.toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+
+  async function commitSegment(){
+    clearInterval(timerInterval);
+    var segmentSeconds = Math.floor((Date.now() - segmentStart) / 1000);
+    lastSegmentSeconds = segmentSeconds;
+    var totalTodaySeconds = minutesTodayBeforeSegment + segmentSeconds;
+
+    data.minutesByDate[todayIso] = totalTodaySeconds;
+    data.totalPearls = (data.totalPearls || 0) + pearlsSinceCommit;
+    pearlsSinceCommit = 0;
+    data.sessions.push({
+      date: todayIso,
+      mode: currentMode,
+      seconds: segmentSeconds,
+      correct: sessionLog.filter(function(s){ return s.isCorrect; }).length,
+      wrong: sessionLog.filter(function(s){ return !s.isCorrect; }).length
+    });
+    if(data.sessions.length > 60){ data.sessions = data.sessions.slice(-60); }
+
+    var streakNow = computeStreak(data.minutesByDate, todayIso);
+    if(streakNow > (data.bestStreak || 0)){ data.bestStreak = streakNow; }
+
+    await saveData();
+    minutesTodayBeforeSegment = totalTodaySeconds;
+    return segmentSeconds;
+  }
+
+  async function finishSession(){
+    var segmentSeconds = await commitSegment();
+    renderStreakText('streakCount');
+    showReport(segmentSeconds);
+  }
+
+  function showReport(segmentSeconds){
+    var correct = sessionLog.filter(function(s){ return s.isCorrect; });
+    var wrong = sessionLog.filter(function(s){ return !s.isCorrect; });
+    var total = sessionLog.length;
+    var pct = total > 0 ? Math.round((correct.length / total) * 100) : 0;
+    var streak = computeStreak(data.minutesByDate, todayIso);
+    var goalMet = (minutesTodayBeforeSegment >= GOAL_SECONDS);
+
+    var card = document.getElementById('reportCard');
+    var html = '';
+    html += '<div class="row"><span>date</span><span>' + niceDate() + '</span></div>';
+    html += '<div class="row"><span>mode</span><span>' + modeLabel(currentMode) + '</span></div>';
+    html += '<div class="row"><span>time this session</span><span>' + mmss(segmentSeconds) + '</span></div>';
+    html += '<div class="row"><span>today\'s total</span><span>' + mmss(minutesTodayBeforeSegment) + (goalMet ? ' — goal met!' : '') + '</span></div>';
+    html += '<div class="row"><span>current streak</span><span>🔥 ' + streak + ' day' + (streak === 1 ? '' : 's') + '</span></div>';
+    if(total > 0){
+      html += '<div class="score">' + correct.length + ' / ' + total + ' correct (' + pct + '%)</div>';
+    } else {
+      html += '<div class="score">no questions answered yet</div>';
+    }
+    if(correct.length > 0){
+      html += '<div class="report-list"><div class="heading">got right</div>';
+      correct.forEach(function(s){ html += '<div class="item right">' + s.equation + '</div>'; });
+      html += '</div>';
+    }
+    if(wrong.length > 0){
+      html += '<div class="report-list"><div class="heading">needs more practice</div>';
+      wrong.forEach(function(s){ html += '<div class="item wrong">' + s.equation + ' (chose ' + s.chosen + ')</div>'; });
+      html += '</div>';
+    }
+    card.innerHTML = html;
+
+    document.getElementById('reportOverlay').classList.add('show');
+  }
+
+  function modeLabel(mode){
+    if(mode === 'mult') return 'times tables';
+    if(mode === 'add') return 'addition';
+    if(mode === 'sub') return 'subtraction';
+    if(mode === 'place') return 'place value';
+    if(mode === 'div') return 'division';
+    if(mode === 'bigmult') return 'big number multiply';
+    return 'mixed challenge';
+  }
+
+  function buildReportText(segmentSeconds){
+    var correct = sessionLog.filter(function(s){ return s.isCorrect; });
+    var wrong = sessionLog.filter(function(s){ return !s.isCorrect; });
+    var total = sessionLog.length;
+    var pct = total > 0 ? Math.round((correct.length / total) * 100) : 0;
+    var streak = computeStreak(data.minutesByDate, todayIso);
+
+    var lines = [];
+    lines.push('Ocean Treasure Hunt — session report');
+    lines.push('Learner: Remi');
+    lines.push('Date: ' + niceDate());
+    lines.push('Mode: ' + modeLabel(currentMode));
+    lines.push('Time this session: ' + mmss(segmentSeconds));
+    lines.push('Today\'s total practice time: ' + mmss(minutesTodayBeforeSegment));
+    lines.push('Current streak: ' + streak + ' day(s)');
+    lines.push('');
+    lines.push('Score: ' + correct.length + ' / ' + total + ' (' + pct + '%)');
+    lines.push('');
+    lines.push('Got right:');
+    if(correct.length === 0){ lines.push('  (none this session)'); }
+    correct.forEach(function(s){ lines.push('  ' + s.equation); });
+    lines.push('');
+    lines.push('Needs more practice:');
+    if(wrong.length === 0){ lines.push('  (none this session)'); }
+    wrong.forEach(function(s){ lines.push('  ' + s.equation + ' (chose ' + s.chosen + ')'); });
+    return lines.join('\n');
+  }
+
+  function downloadReport(){
+    var text = buildReportText(lastSegmentSeconds);
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'remi-math-report-' + todayIso + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Wire up ----------
+  document.querySelectorAll('.mode-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var mode = card.getAttribute('data-mode');
+      if(mode === 'mult'){
+        showTableSelect();
+      } else {
+        startMode(mode);
+      }
+    });
+  });
+
+  document.getElementById('backBtn').addEventListener('click', async function(){
+    await commitSegment();
+    showDashboard();
+  });
+
+  document.getElementById('parentAreaBtn').addEventListener('click', showParents);
+  document.getElementById('parentsBackBtn').addEventListener('click', showDashboard);
+  document.getElementById('downloadHistoryBtn').addEventListener('click', downloadFullHistory);
+
+  document.getElementById('tableSelectBackBtn').addEventListener('click', showDashboard);
+  document.getElementById('selectAllTablesBtn').addEventListener('click', function(){
+    selectedMultTables = MULT_TABLES.slice();
+    renderTableSelect();
+  });
+  document.getElementById('clearAllTablesBtn').addEventListener('click', function(){
+    selectedMultTables = [];
+    renderTableSelect();
+  });
+  document.getElementById('startTablePracticeBtn').addEventListener('click', async function(){
+    if(selectedMultTables.length === 0){
+      document.getElementById('tableSelectError').classList.add('show');
+      return;
+    }
+    data.selectedMultTables = selectedMultTables.slice();
+    await saveData();
+    startMode('mult');
+  });
+
+  document.getElementById('addGroupBtn').addEventListener('click', handleAddGroup);
+  document.getElementById('finishBtn').addEventListener('click', finishSession);
+  document.getElementById('downloadReportBtn').addEventListener('click', downloadReport);
+
+  document.getElementById('keepPlayingBtn').addEventListener('click', function(){
+    document.getElementById('reportOverlay').classList.remove('show');
+    sessionLog = [];
+    startTimer();
+  });
+
+  document.getElementById('menuFromReportBtn').addEventListener('click', function(){
+    document.getElementById('reportOverlay').classList.remove('show');
+    showDashboard();
+  });
+
+  async function init(){
+    await loadData();
+    minutesTodayBeforeSegment = data.minutesByDate[todayIso] || 0;
+    showDashboard();
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
